@@ -1,0 +1,170 @@
+:root {
+    --primary-color: #ff4081;
+    --secondary-color: #f50057;
+    --background-color: #121212;
+    --surface-color: #1e1e1e;
+    --text-color: #ffffff;
+    --text-color-secondary: #b3b3b3;
+    --error-color: #cf6679;
+    --success-color: #4caf50;
+  }
+
+.create-budget-container {
+    padding: 2rem;
+    background-color: var(--surface-color);
+    border-radius: 12px;
+    max-width: 1200px;
+    margin: 2rem auto;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4), 0 6px 6px rgba(0, 0, 0, 0.3);
+  }
+  
+  .loading-message, .error-message {
+    text-align: center;
+    font-size: 1.5rem;
+    padding: 3rem;
+    color: var(--text-color-secondary);
+  }
+
+  .error-message {
+      color: var(--error-color);
+  }
+  
+  .header-with-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .header-with-buttons h2 {
+    margin: 0;
+    font-size: 2.5rem;
+    color: var(--primary-color);
+  }
+
+  .create-budget-container h3 {
+      color: var(--text-color-secondary);
+      font-weight: 500;
+      margin-top: 0;
+      margin-bottom: 1.5rem;
+  }
+  
+  .budget-actions {
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .budget-action-button {
+    padding: 0.7rem 1.4rem;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: var(--background-color);
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .budget-action-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+
+  .budget-action-button:disabled {
+      background-color: #444;
+      color: #888;
+      cursor: not-allowed;
+  }
+  
+  .budget-action-button.create {
+    background-color: var(--success-color);
+    color: var(--text-color);
+  }
+  
+  .budget-action-button.create:hover:not(:disabled) {
+    background-color: #5cb85c;
+  }
+  
+  .budget-action-button.delete {
+    background-color: var(--error-color);
+    color: var(--background-color)
+  }
+  
+  .budget-action-button.delete:hover:not(:disabled) {
+    background-color: #d9534f;
+  }
+  
+  .budget-form table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .budget-form th,
+  .budget-form td {
+    border: 1px solid #333;
+    padding: 0.8rem 1rem;
+    text-align: left;
+    vertical-align: middle;
+  }
+  
+  .budget-form th {
+    background-color: #2a2a2a;
+    color: var(--text-color-secondary);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  .budget-form tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.02);
+  }
+  
+  .budget-form input,
+  .budget-form select {
+    width: 100%;
+    padding: 0.6rem;
+    border-radius: 4px;
+    border: 1px solid #555;
+    background-color: #333;
+    color: var(--text-color);
+    box-sizing: border-box;
+  }
+
+  .budget-form input:focus, .budget-form select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+  }
+
+  .budget-form input[type="number"] {
+      text-align: right;
+  }
+  
+  .group-header-row th {
+    background-color: #111;
+    font-size: 1.2rem;
+    text-align: left;
+    font-weight: 700;
+    color: var(--primary-color);
+    padding-left: 1rem;
+  }
+  
+  .subtotal-row td {
+    font-weight: 700;
+    background-color: #2a2a2a;
+    text-align: right !important;
+    font-size: 1.1rem;
+    color: var(--text-color);
+  }
+
+  .subtotal-row td:first-child {
+      font-style: italic;
+      text-align: right !important;
+      color: var(--text-color-secondary);
+  }
+  
+  .total-cell {
+      font-weight: bold;
+      text-align: right !important;
+      color: var(--text-color);
+  }

@@ -1,0 +1,103 @@
+.show-card {
+  background-color: var(--surface-color);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4), 0 6px 6px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.show-card.expanded {
+  padding-bottom: 1rem;
+}
+
+.show-card-header {
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.show-card h3 {
+  font-size: 1.75rem;
+  color: var(--primary-color);
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+.show-venue {
+  color: var(--text-color-secondary);
+  font-size: 1rem;
+  font-style: italic;
+  margin: 0;
+}
+
+.expand-icon {
+  font-size: 1.5rem;
+  color: var(--primary-color);
+  transition: transform 0.3s ease;
+}
+
+.expand-icon.open {
+  transform: rotate(90deg);
+}
+
+.show-card-body {
+  margin-top: 1.5rem;
+  border-top: 1px solid #333;
+  padding-top: 1.5rem;
+}
+
+.show-card-body h4 {
+  font-size: 1.25rem;
+  color: var(--primary-color);
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.show-dates-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.show-dates-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #2c2c2c;
+}
+
+.show-dates-list li:last-child {
+  border-bottom: none;
+}
+
+.show-date {
+  font-weight: bold;
+}
+
+.show-time {
+  font-size: 1.1rem;
+  color: var(--secondary-color);
+}
+
+.edit-show-link {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background-color: var(--secondary-color);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: bold;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.show-card:hover .edit-show-link {
+  opacity: 1;
+}

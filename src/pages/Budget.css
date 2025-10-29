@@ -1,0 +1,29 @@
+.budget-table-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  overflow-x: auto;
+}
+
+.budget-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--surface-color);
+  color: var(--text-color);
+}
+
+.budget-table th,
+.budget-table td {
+  padding: 1rem 1.5rem;
+  text-align: left;
+  border-bottom: 1px solid #333;
+}
+
+.budget-table th {
+  background-color: #2a2a2a;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.budget-table tbody tr:hover {
+  background-color: #2a2a2a;
+}
