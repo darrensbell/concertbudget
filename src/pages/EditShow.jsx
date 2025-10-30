@@ -1,74 +1,90 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../services/firebase';
-import { Form, Input, Button, DatePicker, TimePicker, Spin, Typography, Row, Col, Card } from 'antd';
-import moment from 'moment';
+import { Form, Input, Button, DatePicker, TimePicker, InputNumber, Space, Typography, Result } from 'antd';
+import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import { toast } from 'react-toastify';
+import dayjs from 'dayjs';
+
+const { Title } = Typography;
 
 const EditShow = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [form] = Form.useForm();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isUpdated, setIsUpdated] = useState(false);
 
   useEffect(() => {
     const fetchShow = async () => {
+      setIsLoading(true);
       try {
-        setLoading(true);
         const docRef = doc(db, 'shows', id);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           const showData = docSnap.data();
           form.setFieldsValue({
-            name: showData.name,
-            venue: showData.venue,
-            numberOfShows: showData.numberOfShows,
-            agentName: showData.agentName,
-            agentEmail: showData.agentEmail,
+            ...showData,
             showDates: showData.showDates.map(sd => ({
-              date: moment(sd.date),
-              time: moment(sd.time, 'HH:mm')
-            }))
+              date: dayjs(sd.date, 'YYYY-MM-DD'),
+              time: dayjs(sd.time, 'h:mm a'),
+            })),
           });
         } else {
-          setError('Show not found');
+          toast.error('Show not found');
+          navigate('/shows');
         }
       } catch (err) {
-        setError('Failed to fetch show');
-        console.error(err);
+        toast.error('Failed to fetch show data: ' + err.message);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
     fetchShow();
-  }, [id, form]);
+  }, [id, form, navigate]);
 
   const onFinish = async (values) => {
+    setIsLoading(true);
     try {
       const docRef = doc(db, 'shows', id);
-      await updateDoc(docRef, {
+      const processedValues = {
         ...values,
         showDates: values.showDates.map(sd => ({
           date: sd.date.format('YYYY-MM-DD'),
-          time: sd.time.format('HH:mm')
+          time: sd.time.format('h:mm a'),
         })),
-        updatedAt: serverTimestamp()
-      });
-      navigate('/');
+        updatedAt: serverTimestamp(),
+      };
+      await updateDoc(docRef, processedValues);
+      toast.success('Show updated successfully!');
+      setIsUpdated(true);
     } catch (err) {
-      console.error('Error updating show: ', err);
+      toast.error('Error updating show: ' + err.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  if (loading) return <Spin tip="Loading show details..." />;
-  if (error) return <Typography.Text type="danger">{error}</Typography.Text>;
+  if (isUpdated) {
+    return (
+      <Result
+        status="success"
+        title="Show Updated Successfully!"
+        extra={[
+          <Button type="primary" key="shows" onClick={() => navigate('/shows')}>
+            Back to Shows List
+          </Button>,
+        ]}
+      />
+    );
+  }
 
   return (
-    <Card>
-      <Typography.Title level={2}>Edit Show</Typography.Title>
-      <Form form={form} layout="vertical" onFinish={onFinish} initialValues={{ showDates: [{ date: null, time: null }] }}>
-        <Form.Item name="name" label="Show Name" rules={[{ required: true }]}>
+    <div style={{ maxWidth: 800, margin: '0 auto' }}>
+      <Title level={2} style={{ marginBottom: '2rem' }}>Edit Show</Title>
+      <Form form={form} layout="vertical" onFinish={onFinish}>
+        <Form.Item name="name" label="Show Name" rules={[{ required: true, message: 'Please enter the show name' }]}>
           <Input />
         </Form.Item>
 
@@ -76,43 +92,39 @@ const EditShow = () => {
           {(fields, { add, remove }) => (
             <>
               {fields.map(({ key, name, ...restField }) => (
-                <Row key={key} gutter={16} align="bottom">
-                  <Col span={10}>
-                    <Form.Item {...restField} name={[name, 'date']} label={`Show Date ${name + 1}`} rules={[{ required: true }]}>
-                      <DatePicker style={{ width: '100%' }} />
-                    </Form.Item>
-                  </Col>
-                  <Col span={10}>
-                    <Form.Item {...restField} name={[name, 'time']} label={`Show Time ${name + 1}`} rules={[{ required: true }]}>
-                      <TimePicker style={{ width: '100%' }} format="HH:mm" />
-                    </Form.Item>
-                  </Col>
-                  <Col span={4}>
-                    {fields.length > 1 ? (
-                      <Button type="dashed" onClick={() => remove(name)} block>
-                        Remove
-                      </Button>
-                    ) : null}
-                  </Col>
-                </Row>
+                <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
+                  <Form.Item
+                    {...restField}
+                    name={[name, 'date']}
+                    rules={[{ required: true, message: 'Missing date' }]}
+                  >
+                    <DatePicker format="YYYY-MM-DD" />
+                  </Form.Item>
+                  <Form.Item
+                    {...restField}
+                    name={[name, 'time']}
+                    rules={[{ required: true, message: 'Missing time' }]}
+                  >
+                    <TimePicker use12Hours format="h:mm a" />
+                  </Form.Item>
+                  <MinusCircleOutlined onClick={() => remove(name)} />
+                </Space>
               ))}
-              {fields.length < 3 && (
-                <Form.Item>
-                  <Button type="dashed" onClick={() => add()} block>
-                    Add Another Show Date
-                  </Button>
-                </Form.Item>
-              )}
+              <Form.Item>
+                <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                  Add Another Show Date
+                </Button>
+              </Form.Item>
             </>
           )}
         </Form.List>
 
-        <Form.Item name="venue" label="Venue" rules={[{ required: true }]}>
+        <Form.Item name="venue" label="Venue" rules={[{ required: true, message: 'Please enter the venue' }]}>
           <Input />
         </Form.Item>
 
-        <Form.Item name="numberOfShows" label="Number of Shows" rules={[{ required: true, type: 'number', min: 1 }]}>
-          <Input type="number" />
+        <Form.Item name="numberOfShows" label="Number of Shows">
+          <InputNumber min={1} />
         </Form.Item>
 
         <Form.Item name="agentName" label="Agent Name">
@@ -124,11 +136,15 @@ const EditShow = () => {
         </Form.Item>
 
         <Form.Item>
-          <Button type="primary" htmlType="submit">Save Changes</Button>
-          <Button onClick={() => navigate('/')} style={{ marginLeft: 8 }}>Cancel</Button>
+          <Button type="primary" htmlType="submit" loading={isLoading}>
+            Save Changes
+          </Button>
+          <Button onClick={() => navigate('/shows')} style={{ marginLeft: 8 }}>
+            Cancel
+          </Button>
         </Form.Item>
       </Form>
-    </Card>
+    </div>
   );
 };
 

@@ -1,11 +1,12 @@
-
 import { useState, useEffect, useCallback, useMemo, Fragment } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, query, where, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { debounce } from 'lodash';
-import { Input, InputNumber, Select, Button, Typography, Spin, Popconfirm, Card } from 'antd';
+import { Input, InputNumber, Select, Button, Typography, Card } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
+import { toast } from 'react-toastify';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -104,98 +105,102 @@ const CreateBudget = () => {
   const [show, setShow] = useState(null);
   const [budget, setBudget] = useState([]);
   const [budgetId, setBudgetId] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [isCreating, setIsCreating] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalAction, setModalAction] = useState(null);
 
   const debouncedSave = useCallback(
     debounce(async (id, budgetDetails) => {
       try {
         const budgetDocRef = doc(db, 'budgets', id);
-        await updateDoc(budgetDocRef, { budgetDetails });
+        await updateDoc(budgetDocRef, { budgetDetails, updatedAt: serverTimestamp() });
+        toast.success('Budget saved automatically!');
       } catch (err) {
-        console.error("Error updating budget:", err);
-        setError("Failed to save changes.");
+        toast.error(`Error updating budget: ${err.message}`);
       }
     }, 1500),
     []
   );
 
   useEffect(() => {
-    const showDocRef = doc(db, 'shows', showId);
-    getDoc(showDocRef).then(docSnap => {
-      if (docSnap.exists()) {
-        const showData = { ...docSnap.data(), id: docSnap.id };
-        if (showData.showDates && showData.showDates[dateIndex]) {
-          setShow(showData);
-        } else {
-          setError("Invalid show date index."); setLoading(false);
+    const loadInitialData = async () => {
+      try {
+        const showDocRef = doc(db, 'shows', showId);
+        const showDocSnap = await getDoc(showDocRef);
+
+        if (!showDocSnap.exists() || !showDocSnap.data().showDates?.[dateIndex]) {
+          toast.error("Show or specific show date not found.");
+          navigate('/shows');
+          return;
         }
-      } else {
-        setError("Show not found."); setLoading(false);
-      }
-    }).catch(err => {
-      console.error("Error fetching show:", err);
-      setError("Failed to load show data."); setLoading(false);
-    });
-  }, [showId, dateIndex]);
+        const showData = { ...showDocSnap.data(), id: showDocSnap.id };
+        setShow(showData);
 
-  useEffect(() => {
-    if (!show || !show.id) return;
+        const showDate = showData.showDates[dateIndex].date;
+        const budgetQuery = query(
+          collection(db, 'budgets'),
+          where('showId', '==', showId),
+          where('showDate.date', '==', showDate)
+        );
+        const budgetSnapshot = await getDocs(budgetQuery);
 
-    const showDate = show.showDates[dateIndex].date;
-    const budgetQuery = query(
-      collection(db, 'budgets'),
-      where('showId', '==', show.id),
-      where('showDate.date', '==', showDate)
-    );
-
-    const unsubscribe = onSnapshot(budgetQuery, async (snapshot) => {
-      if (snapshot.empty) {
-        if (isCreating) return;
-        setIsCreating(true);
-        setLoading(true);
-        try {
+        if (budgetSnapshot.empty) {
           const categoriesSnapshot = await getDocs(collection(db, 'budgetCategories'));
-          const categoriesList = categoriesSnapshot.docs.map(doc => ({...doc.data(), id: doc.id}));
-          categoriesList.sort((a, b) => a.id.localeCompare(b.id));
-
+          const categoriesList = categoriesSnapshot.docs
+            .map(doc => ({ ...doc.data(), id: doc.id }))
+            .sort((a, b) => a.id.localeCompare(b.id));
+          
           const initialBudgetDetails = categoriesList.map(category => ({
             ...category,
-            number: 1, quantity: 1, type: 'Allocation', rate: 0,
-            total: 0,
+            number: 1, quantity: 1, type: 'Allocation', rate: 0, total: 0
           }));
 
-          await addDoc(collection(db, 'budgets'), {
-            showId: show.id, showName: show.name, showDate: show.showDates[dateIndex],
-            budgetDetails: initialBudgetDetails, createdAt: new Date(),
+          const newBudgetRef = await addDoc(collection(db, 'budgets'), {
+            showId: showId,
+            showName: showData.name,
+            showDate: showData.showDates[dateIndex],
+            budgetDetails: initialBudgetDetails,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
           });
-        } catch (err) {
-          console.error("FATAL: Could not auto-create budget:", err);
-          setError("Failed to create budget. Are budget categories seeded?");
-        } finally {
-          setIsCreating(false); setLoading(false);
+          setBudgetId(newBudgetRef.id);
+          setBudget(initialBudgetDetails);
+        } else {
+          const budgetDoc = budgetSnapshot.docs[0];
+          setBudgetId(budgetDoc.id);
+          const budgetData = budgetDoc.data();
+          const budgetDetails = (budgetData.budgetDetails || []).map(item => ({
+            ...item,
+            total: (item.rate || 0) * (item.quantity || 1) * (item.number || 1)
+          }));
+          setBudget(budgetDetails);
         }
-      } else {
-        setLoading(true);
-        const budgetDoc = snapshot.docs[0];
-        setBudgetId(budgetDoc.id);
-        const budgetData = budgetDoc.data();
+      } catch (error) {
+        toast.error(`Failed to load budget data: ${error.message}`);
+        navigate('/shows');
+      }
+    };
+
+    loadInitialData();
+  }, [showId, dateIndex, navigate]);
+
+  useEffect(() => {
+    if (!budgetId) return;
+
+    const unsubscribe = onSnapshot(doc(db, 'budgets', budgetId), (doc) => {
+      if (doc.exists()) {
+        const budgetData = doc.data();
         const budgetDetails = (budgetData.budgetDetails || []).map(item => ({
             ...item,
             total: (item.rate || 0) * (item.quantity || 1) * (item.number || 1)
         }));
         setBudget(budgetDetails);
-        setLoading(false);
       }
-    }, (err) => {
-      console.error("Firestore snapshot listener error:", err);
-      setError("An error occurred while connecting to the database.");
-      setLoading(false);
+    }, (error) => {
+      toast.error(`Real-time connection error: ${error.message}`);
     });
 
     return () => unsubscribe();
-  }, [show, dateIndex, isCreating]);
+  }, [budgetId]);
 
   const handleBudgetChange = (itemId, field, value) => {
     const newBudget = budget.map(item => {
@@ -211,6 +216,25 @@ const CreateBudget = () => {
       debouncedSave(budgetId, newBudget);
     }
   };
+
+  const confirmDelete = (action) => {
+    setModalAction(action);
+    setIsModalOpen(true);
+  };
+
+  const handleConfirm = () => {
+    if (modalAction.type === 'deleteBudget') {
+      handleDeleteBudget();
+    } else if (modalAction.type === 'deleteLineItem') {
+      handleDeleteLineItem(modalAction.payload);
+    }
+    closeModal();
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setModalAction(null);
+  };
   
   const handleDeleteLineItem = (itemId) => {
     const newBudget = budget.filter(item => item.id !== itemId);
@@ -222,14 +246,12 @@ const CreateBudget = () => {
 
   const handleDeleteBudget = async () => {
     if (!budgetId) return;
-    setLoading(true);
     try {
       await deleteDoc(doc(db, 'budgets', budgetId));
-      navigate('/');
+      toast.success('Budget deleted successfully');
+      navigate('/shows');
     } catch (err) {
-      console.error("Error deleting budget:", err);
-      setError("Failed to delete the budget.");
-      setLoading(false);
+      toast.error(`Failed to delete the budget: ${err.message}`);
     }
   };
 
@@ -259,8 +281,7 @@ const CreateBudget = () => {
     [groupedBudget]
   );
 
-  if (error) return <p>Error: {error}</p>;
-  if (!show || loading) return <div style={{ textAlign: 'center', margin: '2rem' }}><Spin size="large" /></div>;
+  if (!show) return null;
 
   return (
     <Card>
@@ -270,9 +291,9 @@ const CreateBudget = () => {
           <Title level={4}>{show.name} - {show.showDates[dateIndex].date}</Title>
         </div>
         {budgetId && (
-          <Popconfirm title="Are you sure? This will delete the entire budget." onConfirm={handleDeleteBudget} okText="Yes" cancelText="No">
-            <Button type="primary" danger>Delete Budget</Button>
-          </Popconfirm>
+            <Button type="primary" danger onClick={() => confirmDelete({ type: 'deleteBudget' })}>
+                Delete Budget
+            </Button>
         )}
       </div>
       
@@ -298,9 +319,7 @@ const CreateBudget = () => {
                 <div style={{...styles.cell, ...styles.rateCell}}><InputNumber style={{width: '100%'}} variant="borderless" min={0} step={0.01} value={item.rate} onChange={value => handleBudgetChange(item.id, 'rate', value)} formatter={value => `£ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/£\s?|(,*)/g, '')} /></div>
                 <div style={{...styles.cell, ...styles.totalCell}}><Text>£{item.total?.toFixed(2) || '0.00'}</Text></div>
                 <div style={{...styles.cell, ...styles.actionCell}}>
-                  <Popconfirm title="Delete this line?" onConfirm={() => handleDeleteLineItem(item.id)}>
-                    <Button type="link" danger icon={<DeleteOutlined style={{color: '#ff7875'}} />} />
-                  </Popconfirm>
+                    <Button type="link" danger icon={<DeleteOutlined style={{color: '#ff7875'}} />} onClick={() => confirmDelete({ type: 'deleteLineItem', payload: item.id })} />
                 </div>
               </div>
             ))}
@@ -314,6 +333,13 @@ const CreateBudget = () => {
       <div style={styles.grandTotalRow}>
         <Title level={4}>Grand Total: £{grandTotal.toFixed(2)}</Title>
       </div>
+
+      <ConfirmationModal
+        isOpen={isModalOpen}
+        message={modalAction?.type === 'deleteBudget' ? "Are you sure? This will delete the entire budget." : "Delete this line?"}
+        onConfirm={handleConfirm}
+        onCancel={closeModal}
+      />
     </Card>
   );
 };

@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../services/firebase';
-import { Form, Input, Button, DatePicker, TimePicker, InputNumber, Space, Typography, Result, message } from 'antd';
+import { Form, Input, Button, DatePicker, TimePicker, InputNumber, Space, Typography, Result } from 'antd';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import { toast } from 'react-toastify';
 
 const { Title } = Typography;
 
@@ -11,10 +12,10 @@ const CreateShow = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [isCreated, setIsCreated] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const onFinish = async (values) => {
-    setIsSubmitting(true);
+    setIsLoading(true);
     try {
       const processedValues = {
         ...values,
@@ -28,12 +29,12 @@ const CreateShow = () => {
 
       await addDoc(collection(db, 'shows'), processedValues);
       setIsCreated(true);
-      message.success('Show created successfully!');
+      toast.success('Show created successfully!');
     } catch (error) {
       console.error('Error adding document: ', error);
-      message.error('Failed to create show. Please check the console for details.');
+      toast.error('Failed to create show. Please check the console for details.');
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
@@ -52,7 +53,7 @@ const CreateShow = () => {
           <Button type="primary" key="create" onClick={resetForm}>
             Create Another Show
           </Button>,
-          <Button key="shows" onClick={() => navigate('/')}>
+          <Button key="shows" onClick={() => navigate('/shows')}>
             Go to Shows List
           </Button>,
         ]}
@@ -120,7 +121,7 @@ const CreateShow = () => {
         </Form.Item>
 
         <Form.Item>
-          <Button type="primary" htmlType="submit" loading={isSubmitting}>
+          <Button type="primary" htmlType="submit" loading={isLoading}>
             Create Show
           </Button>
         </Form.Item>

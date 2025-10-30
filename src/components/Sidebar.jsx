@@ -28,7 +28,11 @@ const Sidebar = () => {
   const mainMenuItems = [
     {
       key: '/',
-      label: <NavLink to="/">Shows</NavLink>,
+      label: <NavLink to="/">Dashboard</NavLink>,
+    },
+    {
+      key: '/shows',
+      label: <NavLink to="/shows">Shows</NavLink>,
     },
     {
       key: '/create-show',

@@ -1,20 +1,21 @@
 import { Link } from 'react-router-dom';
-import { Card, Button, List, Typography } from 'antd';
-import { CalendarOutlined, EditOutlined, FileTextOutlined, ArrowRightOutlined } from '@ant-design/icons';
+import { Card, Button, List, Typography, Popconfirm } from 'antd';
+import { CalendarOutlined, EditOutlined, FileTextOutlined, ArrowRightOutlined, DeleteOutlined } from '@ant-design/icons';
 import { format } from 'date-fns';
 
 const { Title, Text } = Typography;
 
-const ShowCard = ({ show, existingBudgets }) => {
+const ShowCard = ({ show, existingBudgets, onDeleteShow }) => {
   return (
     <Card
       actions={[
         <Link to={`/edit-show/${show.id}`}>
-          <Button type="text" icon={<EditOutlined />}>Edit Show</Button>
+          <Button type="text" icon={<EditOutlined />}>Edit</Button>
         </Link>,
+        <Button type="text" danger icon={<DeleteOutlined />} onClick={() => onDeleteShow(show.id)}>Delete</Button>,
         <Link to={`/shows/${show.id}/recoupment`}>
           <Button type="text" icon={<FileTextOutlined />}>Recoupment</Button>
-        </Link>
+        </Link>,
       ]}
     >
       <Card.Meta
