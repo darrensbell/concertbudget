@@ -11,6 +11,9 @@ const ShowCard = ({ show, existingBudgets }) => {
       actions={[
         <Link to={`/edit-show/${show.id}`}>
           <Button type="text" icon={<EditOutlined />}>Edit Show</Button>
+        </Link>,
+        <Link to={`/shows/${show.id}/recoupment`}>
+          <Button type="text" icon={<FileTextOutlined />}>Recoupment</Button>
         </Link>
       ]}
     >

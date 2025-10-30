@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../services/firebase';
-import './EditShow.css';
+import { Form, Input, Button, DatePicker, TimePicker, Spin, Typography, Row, Col, Card } from 'antd';
+import moment from 'moment';
 
 const EditShow = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [show, setShow] = useState(null);
+  const [form] = Form.useForm();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -18,7 +19,18 @@ const EditShow = () => {
         const docRef = doc(db, 'shows', id);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          setShow({ id: docSnap.id, ...docSnap.data() });
+          const showData = docSnap.data();
+          form.setFieldsValue({
+            name: showData.name,
+            venue: showData.venue,
+            numberOfShows: showData.numberOfShows,
+            agentName: showData.agentName,
+            agentEmail: showData.agentEmail,
+            showDates: showData.showDates.map(sd => ({
+              date: moment(sd.date),
+              time: moment(sd.time, 'HH:mm')
+            }))
+          });
         } else {
           setError('Show not found');
         }
@@ -30,101 +42,93 @@ const EditShow = () => {
       }
     };
     fetchShow();
-  }, [id]);
+  }, [id, form]);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setShow(prevShow => ({
-      ...prevShow,
-      [name]: value
-    }));
-  };
-
-  const handleDateChange = (index, field, value) => {
-    const newShowDates = [...show.showDates];
-    newShowDates[index][field] = value;
-    setShow(prevShow => ({
-      ...prevShow,
-      showDates: newShowDates
-    }));
-  };
-
-  const addShowDate = () => {
-    if (show.showDates.length < 3) {
-      setShow(prevShow => ({
-        ...prevShow,
-        showDates: [...prevShow.showDates, { date: '', time: '' }]
-      }));
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onFinish = async (values) => {
     try {
       const docRef = doc(db, 'shows', id);
       await updateDoc(docRef, {
-        ...show,
+        ...values,
+        showDates: values.showDates.map(sd => ({
+          date: sd.date.format('YYYY-MM-DD'),
+          time: sd.time.format('HH:mm')
+        })),
         updatedAt: serverTimestamp()
       });
       navigate('/');
     } catch (err) {
-      console.error("Error updating show: ", err);
+      console.error('Error updating show: ', err);
     }
   };
 
-  if (loading) return <p className="loading-message">Loading show details...</p>;
-  if (error) return <p className="error-message">{error}</p>;
-  if (!show) return null;
+  if (loading) return <Spin tip="Loading show details..." />;
+  if (error) return <Typography.Text type="danger">{error}</Typography.Text>;
 
   return (
-    <div className="edit-show-container">
-      <h2>Edit Show</h2>
-      <form onSubmit={handleSubmit} className="edit-show-form">
-        <div className="form-group">
-          <label>Show Name</label>
-          <input type="text" name="name" value={show.name} onChange={handleInputChange} />
-        </div>
+    <Card>
+      <Typography.Title level={2}>Edit Show</Typography.Title>
+      <Form form={form} layout="vertical" onFinish={onFinish} initialValues={{ showDates: [{ date: null, time: null }] }}>
+        <Form.Item name="name" label="Show Name" rules={[{ required: true }]}>
+          <Input />
+        </Form.Item>
 
-        {show.showDates.map((showDate, index) => (
-          <div key={index} className="show-date-group">
-            <div className="form-group">
-              <label>Show Date {index + 1}</label>
-              <input type="date" value={showDate.date} onChange={(e) => handleDateChange(index, 'date', e.target.value)} />
-            </div>
-            <div className="form-group">
-              <label>Show Time {index + 1}</label>
-              <input type="time" value={showDate.time} onChange={(e) => handleDateChange(index, 'time', e.target.value)} />
-            </div>
-          </div>
-        ))}
-        {show.showDates.length < 3 && <button type="button" onClick={addShowDate} className="add-show-date-btn">Add Another Show Date</button>}
+        <Form.List name="showDates">
+          {(fields, { add, remove }) => (
+            <>
+              {fields.map(({ key, name, ...restField }) => (
+                <Row key={key} gutter={16} align="bottom">
+                  <Col span={10}>
+                    <Form.Item {...restField} name={[name, 'date']} label={`Show Date ${name + 1}`} rules={[{ required: true }]}>
+                      <DatePicker style={{ width: '100%' }} />
+                    </Form.Item>
+                  </Col>
+                  <Col span={10}>
+                    <Form.Item {...restField} name={[name, 'time']} label={`Show Time ${name + 1}`} rules={[{ required: true }]}>
+                      <TimePicker style={{ width: '100%' }} format="HH:mm" />
+                    </Form.Item>
+                  </Col>
+                  <Col span={4}>
+                    {fields.length > 1 ? (
+                      <Button type="dashed" onClick={() => remove(name)} block>
+                        Remove
+                      </Button>
+                    ) : null}
+                  </Col>
+                </Row>
+              ))}
+              {fields.length < 3 && (
+                <Form.Item>
+                  <Button type="dashed" onClick={() => add()} block>
+                    Add Another Show Date
+                  </Button>
+                </Form.Item>
+              )}
+            </>
+          )}
+        </Form.List>
 
-        <div className="form-group">
-          <label>Venue</label>
-          <input type="text" name="venue" value={show.venue} onChange={handleInputChange} />
-        </div>
+        <Form.Item name="venue" label="Venue" rules={[{ required: true }]}>
+          <Input />
+        </Form.Item>
 
-        <div className="form-group">
-          <label>Number of Shows</label>
-          <input type="number" name="numberOfShows" value={show.numberOfShows} onChange={handleInputChange} min="1" />
-        </div>
+        <Form.Item name="numberOfShows" label="Number of Shows" rules={[{ required: true, type: 'number', min: 1 }]}>
+          <Input type="number" />
+        </Form.Item>
 
-        <div className="form-group">
-          <label>Agent Name</label>
-          <input type="text" name="agentName" value={show.agentName} onChange={handleInputChange} />
-        </div>
+        <Form.Item name="agentName" label="Agent Name">
+          <Input />
+        </Form.Item>
 
-        <div className="form-group">
-          <label>Agent Email</label>
-          <input type="email" name="agentEmail" value={show.agentEmail} onChange={handleInputChange} />
-        </div>
+        <Form.Item name="agentEmail" label="Agent Email" rules={[{ type: 'email' }]}>
+          <Input />
+        </Form.Item>
 
-        <div className="button-group">
-          <button type="submit" className="submit-btn">Save Changes</button>
-          <button type="button" onClick={() => navigate('/')} className="cancel-btn">Cancel</button>
-        </div>
-      </form>
-    </div>
+        <Form.Item>
+          <Button type="primary" htmlType="submit">Save Changes</Button>
+          <Button onClick={() => navigate('/')} style={{ marginLeft: 8 }}>Cancel</Button>
+        </Form.Item>
+      </Form>
+    </Card>
   );
 };
 
