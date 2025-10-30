@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../services/firebase';
-import './Budget.css';
+import { Table, Spin, Typography } from 'antd';
+
+const { Title } = Typography;
 
 function Budget() {
   const [budgetCategories, setBudgetCategories] = useState([]);
@@ -25,38 +27,45 @@ function Budget() {
     fetchBudgetCategories();
   }, []);
 
+  const columns = [
+    {
+      title: 'ID',
+      dataIndex: 'id',
+      key: 'id',
+    },
+    {
+      title: 'Summary Group',
+      dataIndex: 'summaryGroup',
+      key: 'summaryGroup',
+    },
+    {
+      title: 'Department',
+      dataIndex: 'department',
+      key: 'department',
+    },
+    {
+      title: 'Sub Department',
+      dataIndex: 'subDepartment',
+      key: 'subDepartment',
+    },
+    {
+      title: 'Line Item',
+      dataIndex: 'lineItem',
+      key: 'lineItem',
+    },
+  ];
+
   return (
-    <main>
-      <h2>Budget Categories</h2>
-      {loading ? (
-        <p className="loading-message">Loading budget categories...</p>
-      ) : (
-        <div className="budget-table-container">
-          <table className="budget-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Summary Group</th>
-                <th>Department</th>
-                <th>Sub Department</th>
-                <th>Line Item</th>
-              </tr>
-            </thead>
-            <tbody>
-              {budgetCategories.map(category => (
-                <tr key={category.id}>
-                  <td>{category.id}</td>
-                  <td>{category.summaryGroup}</td>
-                  <td>{category.department}</td>
-                  <td>{category.subDepartment}</td>
-                  <td>{category.lineItem}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </main>
+    <div>
+      <Title level={2} style={{ marginBottom: '2rem' }}>Budget Categories</Title>
+      <Table
+        dataSource={budgetCategories}
+        columns={columns}
+        loading={loading}
+        rowKey="id"
+        pagination={false}
+      />
+    </div>
   );
 }
 

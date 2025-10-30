@@ -1,25 +1,47 @@
+import { useState, useEffect } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
+import { Layout, Menu, Tag, Typography } from 'antd';
+import { db } from '../services/firebase'; // Assuming firebase is initialized here
+import { collection, getDocs } from 'firebase/firestore';
 
-import { NavLink } from 'react-router-dom';
-import './Sidebar.css';
+const { Sider } = Layout;
+const { Title } = Typography;
 
 const Sidebar = () => {
-  const isConnected = true; // This would be dynamic in a real app
+  const [isConnected, setIsConnected] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    const checkConnection = async () => {
+      try {
+        await getDocs(collection(db, 'shows'));
+        setIsConnected(true);
+      } catch (error) {
+        setIsConnected(false);
+      }
+    };
+    checkConnection();
+  }, []);
 
   return (
-    <div className="sidebar">
-      <h1 className="nav-logo">Concert</h1>
-      <nav className="sidebar-nav">
-        <NavLink to="/" end>Shows</NavLink>
-        <NavLink to="/create-show">Create Show</NavLink>
-      </nav>
-
-      <div className={`db-status ${isConnected ? 'connected' : 'disconnected'}`}>
-        <div className="db-status-icon"></div>
-        <span className="db-status-text">
-          {isConnected ? 'Connected' : 'Disconnected'}
-        </span>
+    <Sider width={260} theme="light" style={{ borderRight: '1px solid #f0f0f0' }}>
+      <div style={{ padding: '1.5rem', textAlign: 'center' }}>
+        <Title level={4}>Concert</Title>
       </div>
-    </div>
+      <Menu mode="inline" selectedKeys={[location.pathname]}>
+        <Menu.Item key="/">
+          <NavLink to="/">Shows</NavLink>
+        </Menu.Item>
+        <Menu.Item key="/create-show">
+          <NavLink to="/create-show">Create Show</NavLink>
+        </Menu.Item>
+      </Menu>
+      <div style={{ position: 'absolute', bottom: 20, width: '100%', textAlign: 'center', padding: '0 1rem' }}>
+        <Tag color={isConnected ? 'green' : 'red'}>
+          {isConnected ? 'DB Connected' : 'DB Disconnected'}
+        </Tag>
+      </div>
+    </Sider>
   );
 };
 
