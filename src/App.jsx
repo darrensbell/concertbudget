@@ -5,6 +5,7 @@ import Shows from './pages/Shows';
 import CreateShow from './pages/CreateShow';
 import EditShow from './pages/EditShow';
 import CreateBudget from './pages/CreateBudget';
+import BudgetCategorySettings from './pages/BudgetCategorySettings';
 
 const { Content } = Layout;
 
@@ -20,6 +21,7 @@ function App() {
               <Route path="/create-show" element={<CreateShow />} />
               <Route path="/edit-show/:id" element={<EditShow />} />
               <Route path="/create-budget/:showId/:dateIndex" element={<CreateBudget />} />
+              <Route path="/settings/budget-categories" element={<BudgetCategorySettings />} />
             </Routes>
           </Content>
         </Layout>

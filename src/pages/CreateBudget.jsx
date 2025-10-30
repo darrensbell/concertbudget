@@ -283,19 +283,19 @@ const CreateBudget = () => {
             <div style={styles.summaryGroupHeader}><Title level={5}>{summaryGroup}</Title></div>
             {group.items.map((item) => (
               <div key={item.id} style={styles.gridRow}>
-                <div style={{...styles.cell, ...styles.departmentCell}}><Input bordered={false} value={item.department} onChange={e => handleBudgetChange(item.id, 'department', e.target.value)} /></div>
-                <div style={{...styles.cell, ...styles.subDepartmentCell}}><Input bordered={false} value={item.subDepartment} onChange={e => handleBudgetChange(item.id, 'subDepartment', e.target.value)} /></div>
-                <div style={{...styles.cell, ...styles.lineItemCell}}><Input bordered={false} value={item.lineItem} onChange={e => handleBudgetChange(item.id, 'lineItem', e.target.value)} /></div>
-                <div style={{...styles.cell, ...styles.numberCell}}><InputNumber style={{width: '100%'}} bordered={false} min={1} value={item.number} onChange={value => handleBudgetChange(item.id, 'number', value)} /></div>
-                <div style={{...styles.cell, ...styles.quantityCell}}><InputNumber style={{width: '100%'}} bordered={false} min={1} value={item.quantity} onChange={value => handleBudgetChange(item.id, 'quantity', value)} /></div>
+                <div style={{...styles.cell, ...styles.departmentCell}}><Input variant="borderless" value={item.department} onChange={e => handleBudgetChange(item.id, 'department', e.target.value)} /></div>
+                <div style={{...styles.cell, ...styles.subDepartmentCell}}><Input variant="borderless" value={item.subDepartment} onChange={e => handleBudgetChange(item.id, 'subDepartment', e.target.value)} /></div>
+                <div style={{...styles.cell, ...styles.lineItemCell}}><Input variant="borderless" value={item.lineItem} onChange={e => handleBudgetChange(item.id, 'lineItem', e.target.value)} /></div>
+                <div style={{...styles.cell, ...styles.numberCell}}><InputNumber style={{width: '100%'}} variant="borderless" min={1} value={item.number} onChange={value => handleBudgetChange(item.id, 'number', value)} /></div>
+                <div style={{...styles.cell, ...styles.quantityCell}}><InputNumber style={{width: '100%'}} variant="borderless" min={1} value={item.quantity} onChange={value => handleBudgetChange(item.id, 'quantity', value)} /></div>
                 <div style={{...styles.cell, ...styles.typeCell}}>
-                  <Select value={item.type} onChange={value => handleBudgetChange(item.id, 'type', value)} style={{ width: '100%' }} bordered={false}>
+                  <Select value={item.type} onChange={value => handleBudgetChange(item.id, 'type', value)} style={{ width: '100%' }} variant="borderless">
                     <Option value="Allocation">Allocation</Option>
                     <Option value="Fee">Fee</Option><Option value="Weekly">Weekly</Option>
                     <Option value="Daily">Daily</Option><Option value="Buyout">Buyout</Option>
                   </Select>
                 </div>
-                <div style={{...styles.cell, ...styles.rateCell}}><InputNumber style={{width: '100%'}} bordered={false} min={0} step={0.01} value={item.rate} onChange={value => handleBudgetChange(item.id, 'rate', value)} formatter={value => `£ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/£\s?|(,*)/g, '')} /></div>
+                <div style={{...styles.cell, ...styles.rateCell}}><InputNumber style={{width: '100%'}} variant="borderless" min={0} step={0.01} value={item.rate} onChange={value => handleBudgetChange(item.id, 'rate', value)} formatter={value => `£ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/£\s?|(,*)/g, '')} /></div>
                 <div style={{...styles.cell, ...styles.totalCell}}><Text>£{item.total?.toFixed(2) || '0.00'}</Text></div>
                 <div style={{...styles.cell, ...styles.actionCell}}>
                   <Popconfirm title="Delete this line?" onConfirm={() => handleDeleteLineItem(item.id)}>
