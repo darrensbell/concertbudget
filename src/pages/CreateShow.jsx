@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../services/firebase';
-import { Form, Input, Button, DatePicker, TimePicker, InputNumber, Space, Typography, Result } from 'antd';
+import { Form, Input, Button, DatePicker, TimePicker, InputNumber, Space, Typography, Result, message } from 'antd';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
-import moment from 'moment';
 
 const { Title } = Typography;
 
@@ -12,17 +11,29 @@ const CreateShow = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [isCreated, setIsCreated] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const onFinish = async (values) => {
+    setIsSubmitting(true);
     try {
-      await addDoc(collection(db, 'shows'), {
+      const processedValues = {
         ...values,
+        showDates: values.showDates.map(sd => ({
+          date: sd.date.format('YYYY-MM-DD'),
+          time: sd.time.format('h:mm a'),
+        })),
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-      });
+      };
+
+      await addDoc(collection(db, 'shows'), processedValues);
       setIsCreated(true);
+      message.success('Show created successfully!');
     } catch (error) {
       console.error('Error adding document: ', error);
+      message.error('Failed to create show. Please check the console for details.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -77,11 +88,11 @@ const CreateShow = () => {
                     <TimePicker use12Hours format="h:mm a" />
                   </Form.Item>
                   {fields.length > 1 ? (
-                    <MinusCircleOutlined onClick={() => remove(name)} />
+                    <MinusCircleOutlined style={{ color: '#ff7875' }} onClick={() => remove(name)} />
                   ) : null}
                 </Space>
               ))}
-              {fields.length < 3 && (
+              {fields.length < 5 && (
                 <Form.Item>
                   <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
                     Add Another Show Date
@@ -109,7 +120,7 @@ const CreateShow = () => {
         </Form.Item>
 
         <Form.Item>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading={isSubmitting}>
             Create Show
           </Button>
         </Form.Item>
