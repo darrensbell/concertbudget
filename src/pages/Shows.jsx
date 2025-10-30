@@ -2,31 +2,29 @@ import { useState, useEffect } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import ShowCard from '../components/ShowCard';
-import '../components/ShowCard.css';
-import '../App.css';
+import { Typography, Spin, Empty } from 'antd';
+
+const { Title } = Typography;
 
 function Shows() {
   const [shows, setShows] = useState([]);
-  const [existingBudgets, setExistingBudgets] = useState(new Set()); // Use a Set for efficient lookups
+  const [existingBudgets, setExistingBudgets] = useState(new Set());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchShowsAndBudgets = async () => {
       try {
         setLoading(true);
-        // Fetch both shows and budgets in parallel for efficiency
         const [showsSnapshot, budgetsSnapshot] = await Promise.all([
-          getDocs(collection(db, 'shows')), 
+          getDocs(collection(db, 'shows')),
           getDocs(collection(db, 'budgets'))
         ]);
 
         const showsList = showsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        
-        // Create a lookup Set of existing budgets for fast checking
+
         const budgetKeys = new Set();
         budgetsSnapshot.forEach(doc => {
           const budget = doc.data();
-          // Create a unique key for each budget based on showId and date
           if(budget.showId && budget.showDate && budget.showDate.date) {
             const key = `${budget.showId}_${budget.showDate.date}`;
             budgetKeys.add(key);
@@ -47,23 +45,26 @@ function Shows() {
   }, []);
 
   return (
-    <main>
-      <h2>Upcoming Shows</h2>
+    <div>
+      <Title level={2} style={{ marginBottom: '2rem' }}>Upcoming Shows</Title>
       {loading ? (
-        <p className="loading-message">Loading shows and budgets...</p>
+        <div style={{ textAlign: 'center', padding: '4rem' }}>
+          <Spin size="large" />
+        </div>
       ) : shows.length > 0 ? (
-        <div className="shows-grid">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '2rem' }}>
           {shows.map(show => (
-            // Pass the set of existing budget keys down to each ShowCard
             <ShowCard key={show.id} show={show} existingBudgets={existingBudgets} />
           ))}
         </div>
       ) : (
-        <div className="no-shows">
-          <p>No upcoming shows found.</p>
-        </div>
+        <Empty
+          description={
+            <Typography.Text type="secondary">No upcoming shows found.</Typography.Text>
+          }
+        />
       )}
-    </main>
+    </div>
   );
 }
 
