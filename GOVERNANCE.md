@@ -2,21 +2,22 @@ GOVERNANCE_PRIME_AI_LAW
 
 Status: Binding
 Owner: Darren Bell
-Scope: Firebase project for this app, Firestore database, Cloud Functions, React app in this repository
+Scope: Firebase project for this app, Firestore database, Cloud Functions, and the React app in this repository
 
 ⸻
 
 1. PURPOSE
 
-Single source of truth. All assistants, agents, and contributors must comply in full. Non-compliance invalidates all outputs.
+Single source of truth. All assistants, agents, and contributors must comply in full.
+Non-compliance invalidates all outputs.
 
-The purpose of this governance file is to prevent structural drift, ensure absolute consistency between logic layers, and stop recursive or unsolicited operations after task completion.
+The purpose of this governance file is to maintain structural stability, prevent logic drift, and block all recursive or unsolicited operations once a task is complete.
 
 ⸻
 
 2. AUTHORITY
 	•	Only written instructions from Darren Bell authorise any structural change.
-	•	No assumption, inference, or contextual “correction” may override a written command.
+	•	No assumption, inference, or contextual correction may override a written command.
 	•	Ambiguity means stop. Surface the ambiguity, request explicit instruction, and await confirmation.
 
 ⸻
@@ -32,31 +33,44 @@ The purpose of this governance file is to prevent structural drift, ensure absol
 
 4. MODULARITY AND FILE STRUCTURE
 
-Single Responsibility: Each file serves one purpose only.
+Principle:
+Every file exists for a single purpose. Each folder has a fixed domain. No overlap, no leakage of responsibility.
 
-Folder Structure (fixed):
+FOLDER STRUCTURE (FIXED):
 	•	src/pages → route components only. No business logic.
 	•	src/components → reusable UI units. No direct Firestore calls.
-	•	src/services → data access only. Firestore calls live here.
-	•	src/utils → pure helper functions only.
-	•	src/styles → global.css and *.module.css only.
+	•	src/services → data access only. All Firestore calls live here.
+	•	src/utils → pure helpers and stateless utilities only.
+	•	src/styles → contains only global.css and *.module.css files.
 
-Naming Rules:
-	•	Components: PascalCase.
-	•	Hooks: start with use.
-	•	Utilities: camelCase.
-	•	CSS Modules: end with .module.css.
+NAMING RULES:
+	•	React Components → PascalCase (e.g. BudgetTable.jsx).
+	•	Hooks → must begin with use (e.g. useBudgetData.js).
+	•	Utility functions → camelCase (e.g. calculateTotals.js).
+	•	CSS Modules → must end with .module.css.
+	•	Test files → follow the pattern *.test.js and reside beside the file they test.
+	•	Never use generic names like index2.js, final.js, or temp.js.
 
-File Size Caps:
-	•	React files: ≤ 250 lines.
-	•	Hooks and utilities: ≤ 200 lines.
-Split before exceeding these limits.
+FILE SIZE CAPS (MANDATORY):
+	•	React page or component files: maximum 250 lines.
+	•	Hooks and utility files: maximum 200 lines.
+	•	Cloud Functions: maximum 300 lines per function file.
+	•	CSS modules: maximum 150 lines per file.
+	•	Exceeding these limits invalidates the file until it is modularised.
 
-Import Boundaries:
+SPLITTING RULE:
+When any file approaches its limit, the AI must:
+	1.	Halt execution.
+	2.	Announce that the file exceeds the defined cap.
+	3.	Propose and apply a clean modular split (new file names, imports, exports).
+	4.	Verify that imports and exports remain consistent and functional.
+
+IMPORT BOUNDARIES:
 	•	Pages may import services.
-	•	Components never access Firestore or services directly.
-	•	Utilities never import from pages or components.
-	•	No circular imports of any kind.
+	•	Components must never access Firestore or services directly.
+	•	Utilities cannot import from pages or components.
+	•	No circular imports between any layer.
+	•	CSS modules import only via their paired component.
 
 ⸻
 
@@ -88,18 +102,20 @@ Destructive Operations:
 	•	Do not duplicate server-side calculations in the client.
 	•	React may only format, paginate, or filter.
 	•	Cloud Functions own all computational logic.
-	•	Never alter a logic layer (e.g., Firestore rule, React view) to compensate for an error elsewhere.
+	•	Never alter a logic layer (e.g. Firestore rule, React view) to compensate for an error elsewhere.
 
 ⸻
 
 8. ERROR AND EXECUTION GOVERNANCE
 	•	On any failure, halt immediately and surface the exact error message.
 	•	No silent fixes, retries, or workarounds.
-	•	Any batched write touching more than 50 documents must use a transaction or batched write.
+	•	Any batched write touching more than fifty documents must use a transaction or batched write.
 	•	Always confirm success before proceeding to next task.
 
 Post-Completion Rule:
-After completing an assigned operation, the AI must terminate execution for that task. It must not re-open, revise, or “improve” any past task or file unless explicitly commanded. Any autonomous attempt to “correct,” “re-optimise,” or “fix” past work constitutes a governance breach.
+After completing an assigned operation, the AI must terminate execution for that task.
+It must not re-open, revise, or “improve” any past task or file unless explicitly commanded.
+Any autonomous attempt to “correct,” “re-optimise,” or “fix” past work constitutes a governance breach.
 
 ⸻
 
@@ -114,14 +130,15 @@ After completing an assigned operation, the AI must terminate execution for that
 10. AUDITABILITY
 	•	All automated actions must log to ai_activity.log.
 	•	Log format: {timestamp} | {actor} | {action} | {target} | {result}.
-	•	Logs must persist for a minimum of 90 days and be immutable by the AI.
+	•	Logs must persist for a minimum of ninety days and be immutable by the AI.
 
 ⸻
 
 11. DEFAULT FAILSAFE
 
 If uncertain, halt execution and request explicit direction.
-If external data or context is unavailable, do not assume. Use only verifiable local truth.
+If external data or context is unavailable, do not assume.
+Use only verifiable local truth.
 
 ⸻
 
@@ -145,22 +162,27 @@ Law of Correctness:
 Every output must be syntactically valid, correctly indented, and free of typographical, grammatical, or logical errors.
 
 Law of Consistency:
-File paths, imports, and names must always match existing project structure and casing. No placeholder paths or invented directories.
+File paths, imports, and names must always match existing project structure and casing.
+No placeholder paths or invented directories.
 
 Law of Persistence:
-After executing a command, the AI must retain awareness of file locations, naming, and version numbers for the duration of the task. Memory loss or path confusion invalidates the operation.
+After executing a command, the AI must retain awareness of file locations, naming, and version numbers for the duration of the task.
+Memory loss or path confusion invalidates the operation.
 
 Law of Non-Recursion:
 The AI may not self-trigger new edits or revisit prior instructions unless Darren Bell explicitly commands a return to those items.
 
 Law of Immutable Output:
-Once marked “complete” and verified, no revision occurs without written re-authorisation. “Perfectionism loops” are prohibited.
+Once marked “complete” and verified, no revision occurs without written re-authorisation.
+Perfectionism loops are prohibited.
 
 Law of Structural Priority:
-Functional correctness outweighs elegance, brevity, or refactor aesthetics. Never rewrite working code for stylistic reasons.
+Functional correctness outweighs elegance, brevity, or refactor aesthetics.
+Never rewrite working code for stylistic reasons.
 
 Law of Deterministic Completion:
-Every task must end with a deterministic, finalised state. No open conditions or “pending follow-ups” allowed.
+Every task must end with a deterministic, finalised state.
+No open conditions or pending follow-ups allowed.
 
 ⸻
 
@@ -169,14 +191,14 @@ Every task must end with a deterministic, finalised state. No open conditions or
 	•	Respect indentation and line breaks.
 	•	Do not auto-reformat JSON, SQL, or JSX.
 	•	Maintain UTF-8 encoding.
-	•	Enforce trailing newline at EOF.
+	•	Enforce a single trailing newline at end of file.
 	•	No smart quotes or typographic replacements.
 
 ⸻
 
 15. OPERATIONAL SANITY CLAUSE
 
-If two rules appear in conflict, precedence is as follows:
+If two rules appear to conflict, precedence is as follows:
 	1.	Written instruction from Darren Bell.
 	2.	Law of Correctness.
 	3.	Law of Consistency.
@@ -188,4 +210,4 @@ If two rules appear in conflict, precedence is as follows:
 16. ENFORCEMENT
 
 Violation of any clause invalidates the resulting code or output until corrected.
-The AI must flag any detected breach and halt execution until direction is given.
+The AI must flag any detected breach and halt execution until explicit direction is given.
