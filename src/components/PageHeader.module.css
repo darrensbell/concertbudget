@@ -1,0 +1,9 @@
+.header {
+  margin-bottom: var(--spacing-l);
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: var(--on-background-color);
+}

@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { doc, getDoc, updateDoc, serverTimestamp, collection, addDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
-import { Form, Input, Button, DatePicker, TimePicker, InputNumber, Space, Typography, Result } from 'antd';
-import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import { Form, Input, Button, DatePicker, TimePicker, InputNumber, Space, Result } from 'antd';
+import { MinusCircleOutlined, PlusOutlined, HistoryOutlined } from '@ant-design/icons';
 import { toast } from 'react-toastify';
 import dayjs from 'dayjs';
-
-const { Title } = Typography;
+import styles from './EditShow.module.css';
+import PageHeader from '../components/PageHeader';
 
 const EditShow = () => {
   const { id } = useParams();
@@ -57,6 +57,14 @@ const EditShow = () => {
         updatedAt: serverTimestamp(),
       };
       await updateDoc(docRef, processedValues);
+      
+      const historyRef = collection(db, 'budgetHistory');
+      await addDoc(historyRef, {
+        showId: id,
+        change: 'Show details updated.',
+        timestamp: serverTimestamp(),
+      });
+
       toast.success('Show updated successfully!');
       setIsUpdated(true);
     } catch (err) {
@@ -81,10 +89,17 @@ const EditShow = () => {
   }
 
   return (
-    <div style={{ maxWidth: 800, margin: '0 auto' }}>
-      <Title level={2} style={{ marginBottom: '2rem' }}>Edit Show</Title>
-      <Form form={form} layout="vertical" onFinish={onFinish}>
-        <Form.Item name="name" label="Show Name" rules={[{ required: true, message: 'Please enter the show name' }]}>
+    <div className={styles.editShowContainer}>
+      <PageHeader 
+        title="Edit Show" 
+        extra={[
+          <Link to={`/shows/${id}/budget-history`} key="history">
+            <Button icon={<HistoryOutlined />}>Budget History</Button>
+          </Link>,
+        ]}
+      />
+      <Form form={form} layout="vertical" onFinish={onFinish} className={styles.editShowForm}>
+        <Form.Item name="name" label="Show Name" rules={[{ required: true, message: 'Please enter the show name' }]} className={styles.formGroup}>
           <Input />
         </Form.Item>
 
@@ -92,7 +107,7 @@ const EditShow = () => {
           {(fields, { add, remove }) => (
             <>
               {fields.map(({ key, name, ...restField }) => (
-                <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
+                <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline" className={styles.showDateGroup}>
                   <Form.Item
                     {...restField}
                     name={[name, 'date']}
@@ -111,7 +126,7 @@ const EditShow = () => {
                 </Space>
               ))}
               <Form.Item>
-                <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />} className={styles.addShowDateBtn}>
                   Add Another Show Date
                 </Button>
               </Form.Item>
@@ -119,27 +134,27 @@ const EditShow = () => {
           )}
         </Form.List>
 
-        <Form.Item name="venue" label="Venue" rules={[{ required: true, message: 'Please enter the venue' }]}>
+        <Form.Item name="venue" label="Venue" rules={[{ required: true, message: 'Please enter the venue' }]} className={styles.formGroup}>
           <Input />
         </Form.Item>
 
-        <Form.Item name="numberOfShows" label="Number of Shows">
+        <Form.Item name="numberOfShows" label="Number of Shows" className={styles.formGroup}>
           <InputNumber min={1} />
         </Form.Item>
 
-        <Form.Item name="agentName" label="Agent Name">
+        <Form.Item name="agentName" label="Agent Name" className={styles.formGroup}>
           <Input />
         </Form.Item>
 
-        <Form.Item name="agentEmail" label="Agent Email" rules={[{ type: 'email' }]}>
+        <Form.Item name="agentEmail" label="Agent Email" rules={[{ type: 'email' }]} className={styles.formGroup}>
           <Input />
         </Form.Item>
 
-        <Form.Item>
-          <Button type="primary" htmlType="submit" loading={isLoading}>
+        <Form.Item className={styles.buttonGroup}>
+          <Button type="primary" htmlType="submit" loading={isLoading} className={styles.submitBtn}>
             Save Changes
           </Button>
-          <Button onClick={() => navigate('/shows')} style={{ marginLeft: 8 }}>
+          <Button onClick={() => navigate('/shows')} style={{ marginLeft: 8 }} className={styles.cancelBtn}>
             Cancel
           </Button>
         </Form.Item>

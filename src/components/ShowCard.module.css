@@ -1,0 +1,8 @@
+.showCard {
+  transition: box-shadow 0.3s, transform 0.3s;
+}
+
+.showCard:hover {
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+  transform: translateY(-5px);
+}

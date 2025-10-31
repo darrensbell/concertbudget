@@ -211,3 +211,13 @@ If two rules appear to conflict, precedence is as follows:
 
 Violation of any clause invalidates the resulting code or output until corrected.
 The AI must flag any detected breach and halt execution until explicit direction is given.
+
+⸻
+
+17. CRITICAL COMPONENT LOCKDOWN
+
+Law of Component Stability:
+Certain components are critical to the application's function and user workflow. Their structure and styling are considered stable and must not be altered without explicit, written override from Darren Bell.
+
+Frozen Components:
+*   `BudgetGrid.jsx`: The Excel-style layout, including its columns, formatting, and overall structure, is locked. No AI-initiated refactoring, restyling, or modification of this component is permitted. This rule overrides any general styling improvement mandates.

@@ -1,0 +1,22 @@
+.gridContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.gridHeader {
+  display: flex;
+  padding: 8px;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--surface-color);
+}
+
+.gridRow {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.cell {
+  padding: 8px;
+  flex: 1;
+}

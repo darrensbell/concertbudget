@@ -25,6 +25,7 @@ const CreateShow = () => {
         })),
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
+        archived: false,
       };
 
       await addDoc(collection(db, 'shows'), processedValues);

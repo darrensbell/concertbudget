@@ -1,8 +1,11 @@
+
 import { useState, useEffect } from 'react';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import ShowCard from '../components/ShowCard';
 import { Typography, Spin, Empty } from 'antd';
+import { toast } from 'react-toastify';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const { Title } = Typography;
 
@@ -10,6 +13,8 @@ function Shows() {
   const [shows, setShows] = useState([]);
   const [existingBudgets, setExistingBudgets] = useState(new Set());
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showToArchive, setShowToArchive] = useState(null);
 
   useEffect(() => {
     const fetchShowsAndBudgets = async () => {
@@ -20,7 +25,9 @@ function Shows() {
           getDocs(collection(db, 'budgets'))
         ]);
 
-        const showsList = showsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const showsList = showsSnapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .filter(show => show.archived !== true);
 
         const budgetKeys = new Set();
         budgetsSnapshot.forEach(doc => {
@@ -36,6 +43,7 @@ function Shows() {
 
       } catch (error) {
         console.error("Error fetching data: ", error);
+        toast.error("Error fetching data: " + error.message);
       } finally {
         setLoading(false);
       }
@@ -43,6 +51,32 @@ function Shows() {
 
     fetchShowsAndBudgets();
   }, []);
+
+  const openArchiveModal = (showId) => {
+    setShowToArchive(showId);
+    setIsModalOpen(true);
+  };
+
+  const closeArchiveModal = () => {
+    setShowToArchive(null);
+    setIsModalOpen(false);
+  };
+
+  const handleArchiveShow = async () => {
+    if (!showToArchive) return;
+
+    try {
+      const showRef = doc(db, 'shows', showToArchive);
+      await updateDoc(showRef, { archived: true });
+      setShows(shows.filter(show => show.id !== showToArchive));
+      toast.success('Show archived successfully!');
+    } catch (error) {
+      console.error("Error archiving show: ", error);
+      toast.error('Error archiving show: ' + error.message);
+    } finally {
+      closeArchiveModal();
+    }
+  };
 
   return (
     <div>
@@ -54,7 +88,7 @@ function Shows() {
       ) : shows.length > 0 ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '2rem' }}>
           {shows.map(show => (
-            <ShowCard key={show.id} show={show} existingBudgets={existingBudgets} />
+            <ShowCard key={show.id} show={show} existingBudgets={existingBudgets} onDeleteShow={() => openArchiveModal(show.id)} />
           ))}
         </div>
       ) : (
@@ -64,6 +98,13 @@ function Shows() {
           }
         />
       )}
+
+      <ConfirmationModal
+        isOpen={isModalOpen}
+        message="Are you sure you want to archive this show?"
+        onConfirm={handleArchiveShow}
+        onCancel={closeArchiveModal}
+      />
     </div>
   );
 }

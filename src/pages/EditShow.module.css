@@ -1,4 +1,4 @@
-.edit-show-container {
+.editShowContainer {
   max-width: 800px;
   margin: 2rem auto;
   padding: 2.5rem;
@@ -7,30 +7,30 @@
   border: 1px solid var(--border-color);
 }
 
-.edit-show-container h2 {
+.editShowContainer h2 {
   text-align: center;
   margin-bottom: 2rem;
   color: var(--primary-color);
   font-size: 2.2rem;
 }
 
-.edit-show-form {
+.editShowForm {
   display: flex;
   flex-direction: column;
 }
 
-.form-group {
+.formGroup {
   margin-bottom: 1.5rem;
 }
 
-.form-group label {
+.formGroup label {
   display: block;
   margin-bottom: 0.75rem;
   font-weight: 500;
   color: var(--text-color-secondary);
 }
 
-.form-group input {
+.formGroup input {
   width: 100%;
   padding: 0.8rem 1rem;
   border: 1px solid var(--border-color);
@@ -41,20 +41,20 @@
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.form-group input:focus {
+.formGroup input:focus {
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(58, 134, 255, 0.3);
 }
 
-.show-date-group {
+.showDateGroup {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
   align-items: center;
 }
 
-.add-show-date-btn {
+.addShowDateBtn {
   align-self: flex-start;
   margin-bottom: 1.5rem;
   padding: 0.75rem 1.5rem;
@@ -67,19 +67,19 @@
   transition: background-color 0.3s ease;
 }
 
-.add-show-date-btn:hover {
+.addShowDateBtn:hover {
   background-color: var(--secondary-color);
 }
 
-.button-group {
+.buttonGroup {
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
   margin-top: 1rem;
 }
 
-.submit-btn,
-.cancel-btn {
+.submitBtn,
+.cancelBtn {
   padding: 0.8rem 1.5rem;
   border-radius: 6px;
   cursor: pointer;
@@ -88,30 +88,30 @@
   transition: all 0.2s ease;
 }
 
-.submit-btn {
+.submitBtn {
   background-color: var(--secondary-color);
   color: white;
   border: 1px solid var(--secondary-color);
 }
 
-.submit-btn:hover {
+.submitBtn:hover {
   filter: brightness(1.2);
 }
 
-.cancel-btn {
+.cancelBtn {
   background-color: transparent;
   color: var(--text-color-secondary);
   border: 1px solid var(--border-color);
 }
 
-.cancel-btn:hover {
+.cancelBtn:hover {
   background-color: var(--surface-color);
   border-color: var(--text-color-secondary);
   color: var(--text-color);
 }
 
-.loading-message,
-.error-message {
+.loadingMessage,
+.errorMessage {
   font-size: 1.25rem;
   color: var(--text-color-secondary);
   text-align: center;

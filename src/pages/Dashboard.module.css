@@ -1,0 +1,24 @@
+
+.dashboard {
+  padding: 2rem;
+}
+
+.widgetsContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.widget {
+  background-color: var(--surface-color);
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.budgetSummary {
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+}

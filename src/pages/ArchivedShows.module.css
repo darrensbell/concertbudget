@@ -1,0 +1,14 @@
+.archivedShowList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.archivedShowItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: var(--background-alt-color);
+    border-radius: var(--border-radius-m);
+}

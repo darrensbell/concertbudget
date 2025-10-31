@@ -7,6 +7,7 @@ import { Input, InputNumber, Select, Button, Typography, Card } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
 import { toast } from 'react-toastify';
 import ConfirmationModal from '../components/ConfirmationModal';
+import DataGrid from '../components/DataGrid';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -17,52 +18,6 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: '2rem',
-  },
-  gridContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  gridHeader: {
-    display: 'flex',
-    padding: '8px',
-    borderBottom: '1px solid #f0f0f0',
-    backgroundColor: '#fafafa',
-  },
-  gridRow: {
-    display: 'flex',
-    alignItems: 'center',
-    borderBottom: '1px solid #f0f0f0',
-  },
-  cell: {
-    padding: '8px',
-    flex: 1,
-  },
-  departmentCell: {
-    flex: 1.5,
-  },
-  subDepartmentCell: {
-    flex: 1.5,
-  },
-  lineItemCell: {
-    flex: 2,
-  },
-  numberCell: {
-    flex: 0.5,
-  },
-  quantityCell: {
-    flex: 0.5,
-  },
-  typeCell: {
-    flex: 1,
-  },
-  rateCell: {
-    flex: 1,
-  },
-  totalCell: {
-    flex: 1,
-  },
-  actionCell: {
-    flex: 0.5,
   },
   summaryGroupHeader: {
       padding: '16px 8px',
@@ -84,20 +39,6 @@ const styles = {
     marginTop: '1rem',
   },
 };
-
-const GridHeader = () => (
-  <div style={styles.gridHeader}>
-    <div style={{...styles.cell, ...styles.departmentCell}}><Text strong>Department</Text></div>
-    <div style={{...styles.cell, ...styles.subDepartmentCell}}><Text strong>Sub-Department</Text></div>
-    <div style={{...styles.cell, ...styles.lineItemCell}}><Text strong>Line Item</Text></div>
-    <div style={{...styles.cell, ...styles.numberCell}}><Text strong>Number</Text></div>
-    <div style={{...styles.cell, ...styles.quantityCell}}><Text strong>Quantity</Text></div>
-    <div style={{...styles.cell, ...styles.typeCell}}><Text strong>Type</Text></div>
-    <div style={{...styles.cell, ...styles.rateCell}}><Text strong>Rate (£)</Text></div>
-    <div style={{...styles.cell, ...styles.totalCell}}><Text strong>Total (£)</Text></div>
-    <div style={{...styles.cell, ...styles.actionCell}}><Text strong>Action</Text></div>
-  </div>
-);
 
 const CreateBudget = () => {
   const { showId, dateIndex } = useParams();
@@ -280,6 +221,24 @@ const CreateBudget = () => {
     Object.values(groupedBudget).reduce((total, group) => total + group.subtotal, 0),
     [groupedBudget]
   );
+  
+  const columns = [
+    { title: 'Department', dataIndex: 'department', key: 'department', flex: 1.5, render: (text, record) => <Input variant="borderless" value={text} onChange={e => handleBudgetChange(record.id, 'department', e.target.value)} /> },
+    { title: 'Sub-Department', dataIndex: 'subDepartment', key: 'subDepartment', flex: 1.5, render: (text, record) => <Input variant="borderless" value={text} onChange={e => handleBudgetChange(record.id, 'subDepartment', e.target.value)} /> },
+    { title: 'Line Item', dataIndex: 'lineItem', key: 'lineItem', flex: 2, render: (text, record) => <Input variant="borderless" value={text} onChange={e => handleBudgetChange(record.id, 'lineItem', e.target.value)} /> },
+    { title: 'Number', dataIndex: 'number', key: 'number', flex: 0.5, render: (text, record) => <InputNumber style={{width: '100%'}} variant="borderless" min={1} value={text} onChange={value => handleBudgetChange(record.id, 'number', value)} /> },
+    { title: 'Quantity', dataIndex: 'quantity', key: 'quantity', flex: 0.5, render: (text, record) => <InputNumber style={{width: '100%'}} variant="borderless" min={1} value={text} onChange={value => handleBudgetChange(record.id, 'quantity', value)} /> },
+    { title: 'Type', dataIndex: 'type', key: 'type', flex: 1, render: (text, record) => (
+      <Select value={text} onChange={value => handleBudgetChange(record.id, 'type', value)} style={{ width: '100%' }} variant="borderless">
+        <Option value="Allocation">Allocation</Option>
+        <Option value="Fee">Fee</Option><Option value="Weekly">Weekly</Option>
+        <Option value="Daily">Daily</Option><Option value="Buyout">Buyout</Option>
+      </Select>
+    ) },
+    { title: 'Rate (£)', dataIndex: 'rate', key: 'rate', flex: 1, render: (text, record) => <InputNumber style={{width: '100%'}} variant="borderless" min={0} step={0.01} value={text} onChange={value => handleBudgetChange(record.id, 'rate', value)} formatter={value => `£ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/£\s?|(,*)/g, '')} /> },
+    { title: 'Total (£)', dataIndex: 'total', key: 'total', flex: 1, render: (text) => <Text>£{text?.toFixed(2) || '0.00'}</Text> },
+    { title: 'Action', dataIndex: 'action', key: 'action', flex: 0.5, render: (_, record) => <Button type="link" danger icon={<DeleteOutlined style={{color: '#ff7875'}} />} onClick={() => confirmDelete({ type: 'deleteLineItem', payload: record.id })} /> },
+  ];
 
   if (!show) return null;
 
@@ -297,38 +256,18 @@ const CreateBudget = () => {
         )}
       </div>
       
-      <div style={styles.gridContainer}>
-        <GridHeader />
-        {Object.entries(groupedBudget).map(([summaryGroup, group]) => (
-          <Fragment key={summaryGroup}>
-            <div style={styles.summaryGroupHeader}><Title level={5}>{summaryGroup}</Title></div>
-            {group.items.map((item) => (
-              <div key={item.id} style={styles.gridRow}>
-                <div style={{...styles.cell, ...styles.departmentCell}}><Input variant="borderless" value={item.department} onChange={e => handleBudgetChange(item.id, 'department', e.target.value)} /></div>
-                <div style={{...styles.cell, ...styles.subDepartmentCell}}><Input variant="borderless" value={item.subDepartment} onChange={e => handleBudgetChange(item.id, 'subDepartment', e.target.value)} /></div>
-                <div style={{...styles.cell, ...styles.lineItemCell}}><Input variant="borderless" value={item.lineItem} onChange={e => handleBudgetChange(item.id, 'lineItem', e.target.value)} /></div>
-                <div style={{...styles.cell, ...styles.numberCell}}><InputNumber style={{width: '100%'}} variant="borderless" min={1} value={item.number} onChange={value => handleBudgetChange(item.id, 'number', value)} /></div>
-                <div style={{...styles.cell, ...styles.quantityCell}}><InputNumber style={{width: '100%'}} variant="borderless" min={1} value={item.quantity} onChange={value => handleBudgetChange(item.id, 'quantity', value)} /></div>
-                <div style={{...styles.cell, ...styles.typeCell}}>
-                  <Select value={item.type} onChange={value => handleBudgetChange(item.id, 'type', value)} style={{ width: '100%' }} variant="borderless">
-                    <Option value="Allocation">Allocation</Option>
-                    <Option value="Fee">Fee</Option><Option value="Weekly">Weekly</Option>
-                    <Option value="Daily">Daily</Option><Option value="Buyout">Buyout</Option>
-                  </Select>
-                </div>
-                <div style={{...styles.cell, ...styles.rateCell}}><InputNumber style={{width: '100%'}} variant="borderless" min={0} step={0.01} value={item.rate} onChange={value => handleBudgetChange(item.id, 'rate', value)} formatter={value => `£ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/£\s?|(,*)/g, '')} /></div>
-                <div style={{...styles.cell, ...styles.totalCell}}><Text>£{item.total?.toFixed(2) || '0.00'}</Text></div>
-                <div style={{...styles.cell, ...styles.actionCell}}>
-                    <Button type="link" danger icon={<DeleteOutlined style={{color: '#ff7875'}} />} onClick={() => confirmDelete({ type: 'deleteLineItem', payload: item.id })} />
-                </div>
-              </div>
-            ))}
-            <div style={styles.subtotalRow}>
-                <Text strong>Group Total: £{group.subtotal.toFixed(2)}</Text>
-            </div>
-          </Fragment>
-        ))}
-      </div>
+      {Object.entries(groupedBudget).map(([summaryGroup, group]) => (
+        <Fragment key={summaryGroup}>
+          <div style={styles.summaryGroupHeader}><Title level={5}>{summaryGroup}</Title></div>
+          <DataGrid
+            columns={columns}
+            data={group.items}
+          />
+          <div style={styles.subtotalRow}>
+              <Text strong>Group Total: £{group.subtotal.toFixed(2)}</Text>
+          </div>
+        </Fragment>
+      ))}
 
       <div style={styles.grandTotalRow}>
         <Title level={4}>Grand Total: £{grandTotal.toFixed(2)}</Title>

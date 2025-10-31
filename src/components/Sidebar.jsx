@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { Layout, Menu, Typography, Space } from 'antd';
@@ -35,6 +36,10 @@ const Sidebar = () => {
       label: <NavLink to="/shows">Shows</NavLink>,
     },
     {
+      key: '/archived-shows',
+      label: <NavLink to="/archived-shows">Archived Shows</NavLink>,
+    },
+    {
       key: '/create-show',
       label: <NavLink to="/create-show">Create Show</NavLink>,
     },
@@ -44,7 +49,7 @@ const Sidebar = () => {
     {
       key: '/settings/budget-categories',
       icon: <SettingOutlined />,
-      label: <NavLink to="/settings/budget-categories">Settings</NavLink>,
+      label: <NavLink to="/settings/budget-categories">Budget Categories</NavLink>,
     },
   ];
 

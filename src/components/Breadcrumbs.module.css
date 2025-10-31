@@ -1,0 +1,19 @@
+.breadcrumbs {
+    padding: 0.75rem 0;
+    font-size: 0.95rem;
+    color: var(--on-background-alt-color);
+}
+
+.breadcrumbs a {
+    color: var(--on-background-alt-color);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.breadcrumbs a:hover {
+    color: var(--primary-color);
+}
+
+.breadcrumbs span {
+    text-transform: capitalize;
+}
