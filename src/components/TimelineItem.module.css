@@ -1,0 +1,31 @@
+.timelineItem {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    width: 100%;
+}
+
+.timelineItem:nth-child(odd) {
+    flex-direction: row-reverse;
+}
+
+.timelineDot {
+    position: absolute;
+    top: 0.5rem;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    background-color: var(--clarity-primary);
+    border-radius: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
+}
+
+.timelineContent {
+    width: calc(50% - 2rem);
+    padding: 1rem;
+    background-color: var(--clarity-bg-secondary);
+    border-radius: 8px;
+}

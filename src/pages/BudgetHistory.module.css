@@ -1,0 +1,14 @@
+.budgetHistoryPage {
+    padding: 2rem;
+}
+
+.spinnerContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 4rem;
+}
+
+p {
+    margin: 0.5rem 0 0 0;
+}

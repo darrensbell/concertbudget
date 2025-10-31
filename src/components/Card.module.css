@@ -1,0 +1,7 @@
+.card {
+    background-color: var(--clarity-bg-secondary);
+    border: 1px solid var(--clarity-border);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}

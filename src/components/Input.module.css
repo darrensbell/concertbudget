@@ -1,0 +1,16 @@
+.input {
+    background-color: var(--clarity-bg-secondary);
+    color: var(--clarity-text-primary);
+    border: 1px solid var(--clarity-border);
+    border-radius: 4px;
+    padding: 0.5rem 0.75rem;
+    font-size: 1rem;
+    width: 100%;
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.input:focus {
+    outline: none;
+    border-color: var(--clarity-primary);
+    box-shadow: 0 0 0 2px var(--clarity-primary-focus);
+}
